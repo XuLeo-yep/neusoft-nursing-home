@@ -1,0 +1,194 @@
+@startuml 东软颐养中心数据库ER图
+
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+
+' ============================================
+' 用户模块
+' ============================================
+entity "user (用户表)" as user {
+  + id : BIGINT <<PK>>
+  --
+  * login_code : VARCHAR(50) <<UK>>
+  * username : VARCHAR(50)
+  * password : VARCHAR(100)
+  phone : VARCHAR(20)
+  * role : VARCHAR(20) <<admin / health_worker>>
+  served_customer_ids : TEXT
+  --
+  == 预设：admin1/admin2/admin3/health1 ==
+}
+
+entity "customer (客户表)" as customer {
+  + id : BIGINT <<PK>>
+  --
+  * username : VARCHAR(50)
+  password : VARCHAR(100)
+  age : INT
+  gender : VARCHAR(10)
+  id_number : VARCHAR(20)
+  phone : VARCHAR(20)
+  address : VARCHAR(200)
+  check_in_date : VARCHAR(50)
+  status : VARCHAR(20) <<在住 / 外出 / 退住>>
+  health_info : TEXT
+  nursing_level_id : BIGINT <<FK>>
+  designated_worker_id : BIGINT <<FK>>
+  --
+  == 预设：张三/李四/王五 ==
+}
+
+' ============================================
+' 床位模块
+' ============================================
+entity "room (房间表)" as room {
+  + id : BIGINT <<PK>>
+  --
+  room_id : VARCHAR(50)
+  * room_number : VARCHAR(20) <<UK>>
+  room_type : VARCHAR(20) <<单人间 / 双人间>>
+  floor : INT
+  status : VARCHAR(20) <<可用 / 已满 / 维修中>>
+  --
+  == 预设：101/102/201 ==
+}
+
+entity "bed (床位表)" as bed {
+  + id : BIGINT <<PK>>
+  --
+  * bed_id : VARCHAR(50) <<UK>>
+  * bed_number : VARCHAR(20)
+  bed_type : VARCHAR(20) <<普通床 / 护理床>>
+  status : VARCHAR(20) <<空闲 / 已入住 / 维修中>>
+  room_id : BIGINT <<FK>>
+  --
+  == 预设：5个床位 ==
+}
+
+entity "bed_usage_history (床位使用记录)" as bed_history {
+  + id : BIGINT <<PK>>
+  --
+  history_id : VARCHAR(50) <<UK>>
+  start_date : DATETIME
+  end_date : DATETIME
+  monthly_fee : DECIMAL(10,2)
+  status : VARCHAR(20)
+  customer_id : BIGINT <<FK>>
+  bed_id : VARCHAR(50) <<FK>>
+}
+
+' ============================================
+' 申请模块
+' ============================================
+entity "check_out_application (退住申请)" as checkout {
+  + id : BIGINT <<PK>>
+  --
+  application_id : VARCHAR(50) <<UK>>
+  apply_time : DATETIME
+  reason : VARCHAR(500)
+  planned_check_out_date : DATETIME
+  actual_check_out_date : DATETIME
+  refund_amount : DECIMAL(10,2)
+  approval_status : VARCHAR(20) <<待审批 / 已批准 / 已拒绝>>
+  approver : VARCHAR(50)
+  approval_time : DATETIME
+  customer_id : BIGINT <<FK>>
+}
+
+entity "outing_application (外出申请)" as outing {
+  + id : BIGINT <<PK>>
+  --
+  application_id : VARCHAR(50) <<UK>>
+  reason : VARCHAR(500)
+  outing_time : DATETIME
+  planned_return_time : DATETIME
+  actual_return_time : DATETIME
+  destination : VARCHAR(200)
+  companion : VARCHAR(50)
+  approval_status : VARCHAR(20) <<待审批 / 已批准 / 已拒绝>>
+  approver : VARCHAR(50)
+  approval_time : DATETIME
+  customer_id : BIGINT <<FK>>
+}
+
+' ============================================
+' 护理模块
+' ============================================
+entity "nursing_level (护理级别)" as level {
+  + id : BIGINT <<PK>>
+  --
+  level_id : BIGINT <<UK>>
+  * name : VARCHAR(100)
+  status : VARCHAR(20) <<启用 / 停用>>
+  --
+  == 预设：基础护理/高级护理 ==
+}
+
+entity "nursing_project (护理项目)" as project {
+  + id : BIGINT <<PK>>
+  --
+  project_id : BIGINT <<UK>>
+  * code : VARCHAR(50)
+  * name : VARCHAR(100)
+  price : DECIMAL(10,2)
+  status : VARCHAR(20)
+  exec_cycle : VARCHAR(50)
+  exec_times : INT
+  description : VARCHAR(500)
+  --
+  == 预设：量血压/翻身护理/喂药 ==
+}
+
+entity "level_project (级别-项目关联)" as lp {
+  + id : BIGINT <<PK>>
+  --
+  * level_id : BIGINT <<FK>>
+  * project_id : BIGINT <<FK>>
+  --
+  == 多对多中间表 ==
+}
+
+entity "customer_nursing_project (客户购买项目)" as cnp {
+  + id : BIGINT <<PK>>
+  --
+  customer_id : BIGINT <<FK>>
+  project_id : BIGINT <<FK>>
+  purchase_date : DATETIME
+  quantity : INT
+  expire_date : DATETIME
+  remaining_quantity : INT
+}
+
+entity "nursing_record (护理记录)" as record {
+  + id : BIGINT <<PK>>
+  --
+  customer_id : BIGINT <<FK>>
+  project_id : BIGINT <<FK>>
+  nursing_date : DATETIME
+  nursing_quantity : INT
+  is_deleted : TINYINT
+}
+
+' ============================================
+' 关系
+' ============================================
+user ||--o{ customer : "护工服务客户\n(designated_worker_id)"
+customer ||--o{ bed_history : "床位使用记录"
+bed ||--o{ bed_history : ""
+room ||--|{ bed : "一个房间多个床位"
+customer ||--o{ checkout : "退住申请"
+customer ||--o{ outing : "外出申请"
+
+level ||--o{ lp : ""
+project ||--o{ lp : ""
+
+customer ||--o{ cnp : "购买护理项目"
+project ||--o{ cnp : ""
+
+customer ||--o{ record : "护理记录"
+project ||--o{ record : ""
+
+customer }o--o| level : "护理级别\n(nursing_level_id)"
+
+@enduml
