@@ -1,4 +1,4 @@
-package org.example.demo.handler;
+package org.example.neuobject.nursinghouse.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;

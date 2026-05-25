@@ -1,4 +1,4 @@
-package org.example.neuobject.nursinghouse.util;
+package org.example.neuobject.nursinghouse;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @date 2026/5/24 17:39
  */
 @SpringBootApplication
-@MapperScan("org.example.neuobject.nursinghouse.dao")
+@MapperScan("org.example.neuobject.nursinghouse.mapper")
 public class NursingHomeApplication {
     public static void main(String[] args) {
         SpringApplication.run(NursingHomeApplication.class, args);

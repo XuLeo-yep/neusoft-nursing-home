@@ -1,4 +1,4 @@
-package org.example.demo.common;
+package org.example.neuobject.nursinghouse.common;
 
 import java.io.Serializable;
 
@@ -84,6 +84,10 @@ public class Result implements Serializable {
         r.setMsg(msg);
         r.setData(data);
         return r;
+    }
+
+    public static Result error(int code, String msg){
+        return error(code, msg, null);
     }
 
     public void setCode(int code) {

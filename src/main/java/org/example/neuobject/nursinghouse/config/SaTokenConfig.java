@@ -1,13 +1,12 @@
-package org.example.demo.config;
+package org.example.neuobject.nursinghouse.config;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
 import cn.hutool.json.JSONUtil;
-import org.example.demo.common.Result;
+import org.example.neuobject.nursinghouse.common.Result;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -36,8 +35,8 @@ public class SaTokenConfig implements  WebMvcConfigurer{
                 .setAuth(obj -> {
                     System.out.println("---------- 进入Sa-Token全局认证 -----------");
 
-                    // 登录认证 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
-                    SaRouter.match("/**", "/user/doLogin", () -> StpUtil.checkLogin());
+                    // 登录认证 -- 拦截所有路由，排除登录接口
+                    SaRouter.match("/**", "/api/user/login", () -> StpUtil.checkLogin());
 
                     // 更多拦截处理方式，请参考“路由拦截式鉴权”章节 */
                 })
@@ -47,7 +46,7 @@ public class SaTokenConfig implements  WebMvcConfigurer{
                         // 设置响应头
                         SaHolder.getResponse().setHeader("Content-Type", "application/json;charset=UTF-8");
                         // 使用封装的 JSON 工具类转换数据格式
-                        return JSONUtil.toJsonStr( Result.error(e.getMessage()) );
+                    return JSONUtil.toJsonStr(Result.error(e.getMessage()) );
                 })
 
                 // 前置函数：在每次认证函数之前执行（BeforeAuth 不受 includeList 与 excludeList 的限制，所有请求都会进入）
@@ -72,7 +71,9 @@ public class SaTokenConfig implements  WebMvcConfigurer{
         @Override
         public void addInterceptors(InterceptorRegistry registry) {
             // 注册 Sa-Token 拦截器，打开注解式鉴权功能
-            registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+            registry.addInterceptor(new SaInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/api/user/login");
         }
     }
 
